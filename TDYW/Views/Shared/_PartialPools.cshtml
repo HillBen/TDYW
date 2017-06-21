@@ -1,0 +1,32 @@
+@using TDYW.Models
+@model IEnumerable<Pick>
+
+
+<div class="list-group">
+    @foreach (Pick p in Model)
+    {
+        <div class="list-group-item">
+                <div class="list-group-item-heading media-heading pick-info">
+                    @p.Person.Name
+                </div>
+                <div class="pick-info">
+                    @p.Person.Description
+                </div>
+                <div>
+                    @if (p.Player.Pool.PreGame)
+                    {
+                        <button class="btn btn-xs btn-warning" onclick="alert('trash ' + @p.Id)">
+                            <span class="glyphicon glyphicon-trash"></span>
+                        </button>
+                        @*<input type="button" value="Create" onclick="location.href='@Url.Action("Delete", "Pick")'" />*@
+                    }
+                    <button onclick="alert('trash ' + @p.Id )">
+                        <img src="~/images/wiki_icon_24.png" />
+                    </button>
+                </div>
+        </div>
+
+    }
+
+</div>
+

@@ -1,0 +1,27 @@
+@model IEnumerable<TDYW.Models.Player>
+
+@{ 
+    string userId = (string)ViewData["userId"];
+    int rank = 0;
+}
+<table class="table">
+    <thead>
+        <tr>
+            <th>Rank</th>
+            <th>Name</th>
+            <th>Score</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.OrderByDescending(o => o.Points))
+        {
+            <tr>
+                <td>@{++rank}</td>
+                <td>@Html.ActionLink(item.Name, "Details", "Players", new { @id = item.Id })</td>
+                <td>@item.Points</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+

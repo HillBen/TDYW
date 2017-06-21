@@ -1,0 +1,43 @@
+﻿@model Invitation
+
+@Html.ValidationSummary()
+
+@if (Model != null && ViewData.ModelState.IsValid)
+{
+    <div>
+        <h4>Invitation</h4>
+        <hr />
+        <dl class="dl-horizontal">
+            <dt>
+                @Html.DisplayNameFor(model => model.Subject)
+            </dt>
+            <dd>
+                @Html.DisplayFor(model => model.Subject)
+            </dd>
+            <dt>
+                @Html.DisplayNameFor(model => model.Content)
+            </dt>
+            <dd>
+                @Html.DisplayFor(model => model.Content)
+            </dd>
+            <dt>
+                @Html.DisplayNameFor(model => model.OpenInvite)
+            </dt>
+            <dd>
+                @Html.DisplayFor(model => model.OpenInvite)
+            </dd>
+        </dl>
+    </div>
+    @using (Html.BeginForm())
+    {
+        var inviteeId = ViewData["InviteeId"];
+        var invitationId = ViewData["InvitationId"];
+        var email = ViewData["Email"];
+        var poolId = ViewData["PoolId"];
+        @Html.Hidden("InviteeId", inviteeId)
+        @Html.Hidden("Email", email)
+        @Html.Hidden("InvitationId", invitationId)
+        @Html.Hidden("PoolId", poolId)
+        <input type="submit" value="Join" class="btn btn-default" />
+        }
+    }

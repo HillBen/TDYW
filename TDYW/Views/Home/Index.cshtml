@@ -1,0 +1,134 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+
+@section Scripts{
+    <script type="text/javascript">
+        //$(document).ready(function () { 
+        //    $("#txtSearch").autocomplete({
+        //        source: function (request, response) {
+        //            $.getJSON('https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrlimit=10&prop=pageimages&pilimit=10&pithumbsize=100&format=json&gsrsearch=hastemplate:Birth_date_and_age+' + request.term,
+        //                function (data) { response(data[1]) });
+        //        },
+        //        autoFocus:true
+        //    });
+        //});
+
+        $(document).ready(function () {
+
+            $("#txtSearch1").autocomplete({
+                source: function (request, response) {
+                    $.ajax({
+                        url: "https://en.wikipedia.org/w/api.php",
+                        dataType: "jsonp",
+                        type: "GET",
+                        data: {
+                            action: "query",
+                            generator: "search",
+                            gsrlimit: 10,
+                            prop: "pageimages|pageterms",
+                            pilimit: 10,
+                            format: "json",
+                            gsrsearch: "hastemplate:Birth_date_and_age " + request.term,
+                            wbptterms: "description"
+                        },
+                        success: function (data) {  
+                            var obj = data.query.pages;
+                            $(obj).sort(function (a, b) {
+                                return +a.index > +b.index ? 1 : -1;
+                            });
+                            response(obj);
+                        }
+                    })
+                },
+                minLength: 1,
+                delay: 1000
+            }).autocomplete("instance")._renderItem = function (ul, item) {
+
+                var thumb = 'images/noimage_thumb.png';
+                var width = 98;
+                var height = 100;
+                var desc = '';
+                if (item.terms != null) {
+                    desc = item.terms.description[0];
+                }
+                if (item.thumbnail != null) {
+                    thumb = item.thumbnail.source;
+                    width = item.thumbnail.width;
+                    height = item.thumbnail.height;
+                }
+                var inner_html = '<div class="media"><div class="media-left"><img src="' + thumb + '" class="media-object"/></div><div class="media-body"><h4 class="media-heading">' + item.index + ') ' + item.title + '</h4><p>' + desc + '</p></div></div>';
+                //var inner_html = '<a onclick="alert(' + "hello der" + ')"><div class="><img class="img-responsive" src="' + thumb + '"/>' + item.title + '</div><div></div></div></a>';
+                //    return $( "<li></li>" )
+                //    .data( "item.autocomplete", item )
+                //    .append(inner_html)
+                //    .appendTo( ul );
+                return $("<li>")
+                    .append(inner_html)
+                    .appendTo(ul);
+            };
+
+
+            //    .data("ui-autocomplete")._renderItem = function (ul, item) {
+            //    var thumb = 'images/noimage_thumb.png';
+            //    var width = 98;
+            //    var height = 100;
+            //    if (item.thumbnail != null) {
+            //        thumb = item.thumbnail.source;
+            //        width = item.thumbnail.width;
+            //        height = item.thumbnail.height;
+            //    }
+            //    var inner_html = '<a onclick="alert(' + "" + ')"><div><span><img height="' + height + '" width="' + width + '" src="' + thumb + '"/>' + item.title + '</div><div></div></div></a>';
+            //        return $( "<li></li>" )
+            //        .data( "item.autocomplete", item )
+            //        .append(inner_html)
+            //        .appendTo( ul );
+            //};
+        });
+    </script>
+}
+
+<div class="jumbotron">
+    <h1>They Die. You Win.</h1>
+    Play Free <a href="@Url.Action("Index","Pools")">Now</a>.
+</div>
+<div class="row">
+    <div class="col-md-3">
+        <h2>Play Now</h2>
+        <ul>
+            <li>@Html.ActionLink("Join a Pool", "Index", "Pools")</li>
+        </ul>
+    </div>
+    <div class="col-md-3">
+        <h2>Manage a Pool</h2>
+        <ul>
+            <li>@Html.ActionLink("Create a New Pool", "Create","Pools")</li>
+            <li>@Html.ActionLink("Manage Existing Pools", "Index", "Pools")</li>
+        </ul>
+    </div>
+    <div class="col-md-3">
+        <h2>Statistics</h2>
+        <ul>
+            <li><a href="https://go.microsoft.com/fwlink/?LinkId=518008">Leaderboards</a></li>
+            <li><a href="https://go.microsoft.com/fwlink/?LinkId=398602">Recent Highlights</a></li>
+        </ul>
+    </div>
+    <div class="col-md-3">
+        <h2>Learn More</h2>
+        <ul>
+            <li><a href="https://go.microsoft.com/fwlink/?LinkID=517851">About Us</a></li>
+            <li>@Html.ActionLink("Frequently Asked Questions", "FAQ","Home")</li>
+        </ul>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-xs-12 col-sm-6">
+        @Html.TextBox("searchTerm1", null, new { @id = "txtSearch1", @style = "width:100%;" })
+    </div>
+    <div class="col-xs-12 col-sm-6">
+        @Html.TextBox("searchTerm2", null, new { @id = "txtSearch2", @style = "width:100%;" })
+    </div>
+</div>
+

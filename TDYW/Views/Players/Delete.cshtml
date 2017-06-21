@@ -1,0 +1,22 @@
+@model TDYW.Models.Player
+
+@{
+    ViewData["Title"] = "Delete";
+}
+
+<h2>Delete</h2>
+
+<h3>Are you sure you want to delete yourself from this pool?</h3>
+<div>
+    <h4>@Model.Pool.Name</h4>
+    <hr />
+    <h3>Your Picks</h3>
+    @await  Html.PartialAsync("_PartialPicks", Model.Picks)
+    <hr />
+    <form asp-action="Delete">
+        <div class="form-actions no-color">
+            <input type="submit" value="Delete" class="btn btn-default" /> |
+            <a asp-action="Index">Back to List</a>
+        </div>
+    </form>
+</div>
