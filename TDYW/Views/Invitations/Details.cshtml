@@ -23,12 +23,35 @@
             @Html.DisplayFor(model => model.Content)
         </dd>
         <dt>
-            @Html.DisplayNameFor(model => model.OpenInvite)
+            @Html.DisplayNameFor(model => model.Secret)
         </dt>
         <dd>
-            @Html.DisplayFor(model => model.OpenInvite)
+            @Html.DisplayFor(model => model.Secret)
         </dd>
+        @*<dt>
+            @Html.DisplayNameFor(model => model.RsvpUrl)
+        </dt>
+        <dd>
+            @Html.DisplayFor(model => model.RsvpUrl)
+        </dd>*@
     </dl>
+    @{ 
+        string rsvpUrl;
+        if (Model.Pool.OpenEnrollment)
+        {
+            rsvpUrl = Url.Action("Rsvp", "Invitations", new { @id = Model.Id });
+
+        }
+        else
+        {
+            rsvpUrl = Url.Action("Rsvp", "Invitations", new { @id = Model.Id, @secret = Model.Secret });
+        }
+        string qrUrl = "https://chart.googleapis.com/chart?cht=qr&chs=450x450&chl=" + Html.Encode(rsvpUrl);
+    }
+    <div>
+        <img class="img-responsive" src="@qrUrl" alt="QR Code" />
+        <a href="@rsvpUrl">Join Now</a>
+    </div>
 </div>
 <div>
     <a asp-action="Edit" asp-route-id="@Model.Id">Edit</a> |

@@ -8,7 +8,7 @@ using TDYW.Data;
 namespace TDYW.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20170625233207_initial")]
+    [Migration("20170626234802_initial")]
     partial class initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -209,6 +209,8 @@ namespace TDYW.Migrations
                     b.Property<bool>("OpenInvite");
 
                     b.Property<int>("PoolId");
+
+                    b.Property<string>("Secret");
 
                     b.Property<string>("Subject")
                         .HasMaxLength(78);

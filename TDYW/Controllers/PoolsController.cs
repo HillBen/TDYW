@@ -93,21 +93,27 @@ namespace TDYW.Controllers
                 return NotFound();
             }
 
-            var pool = await _context.Pools.SingleOrDefaultAsync(m => m.Id == id);
+            var pool = await _context.Pools
+                                .Include(i => i.Players)
+                                .ThenInclude(t => t.ApplicationUser)
+                                .SingleOrDefaultAsync(m => m.Id == id);
             if (pool == null)
             {
                 return NotFound();
             }
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var player = pool.Players.FirstOrDefault(p => p.UserId == userId);   //todo: make sure a user can only have one player per pool
             //var user = await _userManager.GetUserAsync(User);
             if (pool.Private)
             {
-                if(string.IsNullOrEmpty(userId) || (pool.UserId != userId && !pool.Players.Any(p=>p.UserId == userId)))
+                if(string.IsNullOrEmpty(userId) || (pool.UserId != userId && player == null))
                 {
                     return Unauthorized();
                 } 
             }
-            if(!string.IsNullOrEmpty(userId)) ViewData["userId"] = userId;
+            ViewData["userId"] = userId;
+            ViewData["playerId"] = player != null ? player.Id : 0;
+            
             return View(pool);
         }
 
@@ -125,7 +131,7 @@ namespace TDYW.Controllers
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Name,Description,StartDate,EndDate,Private,OpenEnrollment,PicksPerPlayer,OversPerPlayer,AllowPluralityVote,RequireTwoThirdsVote,FixedAgeBonus,FixedAgeBonusMinuend,WeightedAgeBonus,WeightedAgeBonusFactor,WeightedRankBonus,WeightedRankBonusFactor,FixedRankBonus,FixedRankBonusFactor")] Pool pool)
+        public async Task<IActionResult> Create([Bind("Name,Description,StartDate,EndDate,OpenEnrollment,PicksPerPlayer")] Pool pool) //,Private,OversPerPlayer,AllowPluralityVote,RequireTwoThirdsVote,FixedAgeBonus,FixedAgeBonusMinuend,WeightedAgeBonus,WeightedAgeBonusFactor,WeightedRankBonus,WeightedRankBonusFactor,FixedRankBonus,FixedRankBonusFactor
         {
             if (ModelState.IsValid)
             {
@@ -136,10 +142,13 @@ namespace TDYW.Controllers
                 }
                 var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
                 var user = await _context.ApplicationUsers.SingleOrDefaultAsync(u => u.Id == userId);
-                if(user != null && user.Pools != null)
+                if(user != null)
                 {
                     user.Pools.Add(pool);
                     await _context.SaveChangesAsync();
+                } else
+                {
+                    return Unauthorized();
                 }
                 return RedirectToAction("Index");
             }
@@ -176,7 +185,7 @@ namespace TDYW.Controllers
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Description,StartDate,EndDate,Private,OpenEnrollment,PicksPerPlayer,OversPerPlayer,AllowPluralityVote,RequireTwoThirdsVote,FixedAgeBonus,FixedAgeBonusMinuend,WeightedAgeBonus,WeightedAgeBonusFactor,WeightedRankBonus,WeightedRankBonusFactor,FixedRankBonus,FixedRankBonusFactor")] Pool poolNew)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Description,StartDate,EndDate,OpenEnrollment,PicksPerPlayer")] Pool poolNew) //,Private,OversPerPlayer,AllowPluralityVote,RequireTwoThirdsVote,FixedAgeBonus,FixedAgeBonusMinuend,WeightedAgeBonus,WeightedAgeBonusFactor,WeightedRankBonus,WeightedRankBonusFactor,FixedRankBonus,FixedRankBonusFactor
         {
             if (id != poolNew.Id)
             {

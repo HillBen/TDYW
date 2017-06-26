@@ -61,10 +61,13 @@ namespace TDYW.Models
 
         public bool Private { get; set; }
 
+        [Display(Name="Open Enrollment")]
         public bool OpenEnrollment { get; set; }
 
+        [Display(Name = "Picks Per Player")]
         public int PicksPerPlayer { get; set; }
 
+        [Display(Name = "Reserves Per Player")]
         public int OversPerPlayer { get; set; }
 
 
@@ -76,15 +79,17 @@ namespace TDYW.Models
         public bool RequireTwoThirdsVote { get; set; }
 
 
-        [Display(Name = "Award a fixed age bonus?")]
+        [Display(Name = "Award a fixed age bonus?", Description = "[Fixed Age Minuend] - [Age]")]
         public bool FixedAgeBonus { get; set; }
 
+        [Display(Name = "Fixed Age Minuend")]
         public int FixedAgeBonusMinuend { get; set; }
 
 
         [Display(Name = "Award a weighted age bonus?")]
         public bool WeightedAgeBonus { get; set; }
 
+        [Display(Name = "Award a weighted age bonus?")]
         public int WeightedAgeBonusFactor { get; set; }
 
 

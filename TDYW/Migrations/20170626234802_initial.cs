@@ -214,6 +214,7 @@ namespace TDYW.Migrations
                     Content = table.Column<string>(maxLength: 255, nullable: true),
                     OpenInvite = table.Column<bool>(nullable: false),
                     PoolId = table.Column<int>(nullable: false),
+                    Secret = table.Column<string>(nullable: true),
                     Subject = table.Column<string>(maxLength: 78, nullable: true)
                 },
                 constraints: table =>

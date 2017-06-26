@@ -209,6 +209,8 @@ namespace TDYW.Migrations
 
                     b.Property<int>("PoolId");
 
+                    b.Property<string>("Secret");
+
                     b.Property<string>("Subject")
                         .HasMaxLength(78);
 

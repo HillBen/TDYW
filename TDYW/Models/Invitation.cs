@@ -22,11 +22,14 @@ namespace TDYW.Models
 
         public bool OpenInvite { get; set; }
 
+        public string Secret { get; set; }
+
         public int PoolId { get; set; }
 
         public Pool Pool { get; set; }
 
         public ICollection<Recipient> Recipients { get; set; } = new List<Recipient>();
+
 
     }
 }

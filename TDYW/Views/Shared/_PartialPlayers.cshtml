@@ -15,8 +15,9 @@
     <tbody>
         @foreach (var item in Model.OrderByDescending(o => o.Points))
         {
+            rank++;
             <tr>
-                <td>@{++rank;}</td>
+                <td>@rank</td>
                 <td>@Html.ActionLink(item.ApplicationUser.DisplayName, "Details", "Players", new { @id = item.Id })</td>
                 <td>@item.Points</td>
             </tr>

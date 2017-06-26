@@ -1,4 +1,4 @@
-@model IEnumerable<TDYW.Models.Invitation>
+@model TDYW.Models.Pool
 
 @{
     ViewData["Title"] = "Index";
@@ -6,42 +6,11 @@
 
 <h2>Index</h2>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-                <th>
-                    @Html.DisplayNameFor(model => model.Subject)
-                </th>
-                <th>
-                    @Html.DisplayNameFor(model => model.Content)
-                </th>
-                <th>
-                    @Html.DisplayNameFor(model => model.OpenInvite)
-                </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Subject)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Content)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.OpenInvite)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-            </td>
-        </tr>
+@if (Model != null)
+{
+    <p>
+        <a asp-action="Create" asp-route-id="@Model.Id">Create New</a>
+    </p>
+    @Html.Partial("_PartialInvite", Model.Invitations)
 }
-    </tbody>
-</table>
+

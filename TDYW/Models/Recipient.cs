@@ -23,5 +23,8 @@ namespace TDYW.Models
         public int InvitationId { get; set; }
 
         public Invitation Invitation { get; set; }
+
+        [NotMapped]
+        public string RsvpUrl { get; set; }
     }
 }

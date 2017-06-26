@@ -88,7 +88,7 @@ namespace TDYW.Controllers
             }
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             
-            var player = await _context.Players.SingleOrDefaultAsync(p => p.PoolId == poolId && p.UserId == userId);
+            var player = await _context.Players.FirstOrDefaultAsync(p => p.PoolId == poolId && p.UserId == userId);  //todo: make sure a user can only have one player per pool
             if(player == null)
             {
                 var pool = await _context.Pools.SingleOrDefaultAsync(s => s.Id == poolId);

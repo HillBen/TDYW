@@ -3,6 +3,7 @@
 @{
     ViewData["Title"] = "Details";
     string userId = (string)ViewData["userId"];
+    int playerId = (int)ViewData["playerId"];
 }
 
 
@@ -14,18 +15,18 @@
         @if (Model.UserId == userId)
         {
             @Html.ActionLink("Edit Pool", "Edit", "Pools", new { @id = Model.Id })
+            <span>  </span>
             @Html.ActionLink("Invite Players", "Index", "Invitations", new { @id = Model.Id })
         }
-        @if (Model.UserIsPlaying(userId))
+        @if (playerId > 0)
         {
-            //this user is playing in this pool
-            //<h3>Your Picks</h3>
-            //@await Html.PartialAsync("_PartialPicks",thisPlayer.Picks)
-            @Html.ActionLink("Edit Picks", "Join", "Pools", new { @id = Model.Id })
+            <span>  </span>
+            @Html.ActionLink("Edit Picks", "Details", "Players", new { @id = playerId })
         }
-        else if (Model.UserId == userId || Model.Private == false)
+        else if (Model.UserId == userId || Model.OpenEnrollment)
         {
-            @Html.ActionLink("Join Pool", "Join", "Pools", new { @id = Model.Id })
+            <span>  </span>
+            @Html.ActionLink("Join Pool", "Create", "Players", new { @id = Model.Id })
         }
     }
     <a asp-action="Index">Back to List</a>
@@ -58,12 +59,12 @@
         <dd>
             @Html.DisplayFor(model => model.EndDate)
         </dd>
-        <dt>
+        @*<dt>
             @Html.DisplayNameFor(model => model.Private)
         </dt>
         <dd>
             @Html.DisplayFor(model => model.Private)
-        </dd>
+        </dd>*@
         <dt>
             @Html.DisplayNameFor(model => model.OpenEnrollment)
         </dt>
@@ -76,7 +77,7 @@
         <dd>
             @Html.DisplayFor(model => model.PicksPerPlayer)
         </dd>
-        <dt>
+        @*<dt>
             @Html.DisplayNameFor(model => model.OversPerPlayer)
         </dt>
         <dd>
@@ -141,12 +142,12 @@
         </dt>
         <dd>
             @Html.DisplayFor(model => model.FixedRankBonusFactor)
-        </dd>
+        </dd>*@
         <dt>
-            @Html.DisplayNameFor(model => model.Owner)
+            @Html.DisplayName("Pool Owner")
         </dt>
         <dd>
-            @Html.DisplayFor(model => model.Owner.Id)
+            @Html.DisplayFor(model => model.Owner.DisplayName)
         </dd>
     </dl>
 

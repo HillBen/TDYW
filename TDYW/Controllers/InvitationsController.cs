@@ -17,22 +17,22 @@ namespace TDYW.Controllers
     public class InvitationsController : Controller
     {
         private readonly ApplicationDbContext _context;
-        private readonly IDataProtectionProvider _dataProtectionProvider;
-        public InvitationsController(ApplicationDbContext context, IDataProtectionProvider dataProtectionProvider)
+
+        public InvitationsController(ApplicationDbContext context)
         {
             _context = context;
-            _dataProtectionProvider = dataProtectionProvider;
+
         }
 
         // GET: Invitations
         [Authorize]
-        public async Task<IActionResult> Index(int? poolId)
+        public async Task<IActionResult> Index(int? id)
         {
-            if (poolId == null)
+            if (id == null)
             {
                 return NotFound();
             }
-            var pool = await _context.Pools.Include(i=>i.Invitations).SingleOrDefaultAsync(m => m.Id == poolId);
+            var pool = await _context.Pools.Include(i=>i.Invitations).SingleOrDefaultAsync(m => m.Id == id);
             if(pool == null)
             {
                 return NotFound();
@@ -42,7 +42,15 @@ namespace TDYW.Controllers
             {
                 return Unauthorized();
             }
-            return View(pool.Invitations.ToList());
+            if (pool.Invitations.Any())
+            {
+                return View(pool);
+            }
+            else
+            {
+                return RedirectToAction("Create", new { @id = id });
+            }
+            
         }
 
         // GET: Invitations/Details/5
@@ -54,7 +62,7 @@ namespace TDYW.Controllers
                 return NotFound();
             }
 
-            var invitation = await _context.Invitations
+            var invitation = await _context.Invitations.Include(i=>i.Pool)
                 .SingleOrDefaultAsync(m => m.Id == id);
             if (invitation == null)
             {
@@ -65,18 +73,35 @@ namespace TDYW.Controllers
             {
                 return Unauthorized();
             }
+            //var protector = _dataProtectionProvider.CreateProtector("InvitationToken");
+            //invitation.RsvpUrl = protector.Protect(id.Value.ToString());
             return View(invitation);
         }
 
         // GET: Invitations/Create
         [Authorize]
-        public IActionResult Create(int? poolId)
+        public async Task<IActionResult> Create(int? id)
         {
-            if(poolId == null)
+            if(id == null)
             {
                 return NotFound();
             }
-            ViewData["PoolId"] = poolId;
+            var pool = await _context.Pools.SingleOrDefaultAsync(p => p.Id == id.Value);
+            if(pool == null)
+            {
+                return NotFound();
+            }
+            ViewData["PoolId"] = id;
+            if (!pool.OpenEnrollment)
+            {
+                //create a default random secret
+                Random random = new Random();
+                const string choiceCharacters =
+                            "ABCDEFGHJKLMNPQRTUVWXY" +
+                            "abcdefghijkmnpqrtuvwxy" +
+                            "346789";
+                ViewData["Secret"] = new string(Enumerable.Repeat(choiceCharacters, 8).Select(s => s[random.Next(s.Length)]).ToArray());
+            }
             return View();
         }
 
@@ -86,7 +111,7 @@ namespace TDYW.Controllers
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Subject,Content,OpenInvite,PoolId")] Invitation invitation)
+        public async Task<IActionResult> Create([Bind("Subject,Content,Secret,PoolId")] Invitation invitation)
         {
             if (ModelState.IsValid)
             {
@@ -105,7 +130,7 @@ namespace TDYW.Controllers
                     _context.Add(invitation);
                     await _context.SaveChangesAsync();
                     await _context.Entry(invitation).GetDatabaseValuesAsync();
-                    return View("Details", invitation);
+                    return RedirectToAction("Details", new { @id = invitation.Id });
                 }
                 else
                 {
@@ -125,7 +150,7 @@ namespace TDYW.Controllers
                 return NotFound();
             }
 
-            var invitation = await _context.Invitations.SingleOrDefaultAsync(m => m.Id == id);
+            var invitation = await _context.Invitations.Include(i=>i.Pool).SingleOrDefaultAsync(m => m.Id == id);
             if (invitation == null)
             {
                 return NotFound();
@@ -144,7 +169,7 @@ namespace TDYW.Controllers
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Subject,Content,OpenInvite")] Invitation invitationNew)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Subject,Content,Secret,PoolId")] Invitation invitationNew)
         {
             if (id != invitationNew.Id)
             {
@@ -153,7 +178,7 @@ namespace TDYW.Controllers
 
             if (ModelState.IsValid)
             {
-                var invitationOld = await _context.Invitations.SingleOrDefaultAsync(m => m.Id == id);
+                var invitationOld = await _context.Invitations.Include(i => i.Pool).SingleOrDefaultAsync(m => m.Id == id);
                 if (invitationOld == null)
                 {
                     return NotFound();
@@ -172,7 +197,7 @@ namespace TDYW.Controllers
                 {
                     ModelState.AddModelError("PreGameException", "This pool has started. The invitation period is over.");
                 }
-                return RedirectToAction("Index", new { @poolId = invitationOld.PoolId });
+                return RedirectToAction("Index", new { @id = invitationOld.PoolId });
             }
             return View(invitationNew);
         }
@@ -220,66 +245,55 @@ namespace TDYW.Controllers
 
 
         [Authorize]
-        public async Task<IActionResult> Rsvp(int? id, string token)
+        public async Task<IActionResult> Rsvp(int? id, string secret)
         {
             if (id == null)
             {
                 return NotFound();
             }
 
-            var invitation = await _context.Invitations
+            var invitation = await _context.Invitations.Include(i=>i.Pool)
                 .SingleOrDefaultAsync(m => m.Id == id);
             if (invitation == null)
             {
                 return BadRequest();
             }
-            if (invitation.Pool.Private)
+            if (!invitation.Pool.OpenEnrollment)
             {
-                if (string.IsNullOrEmpty(token))
+                if (string.IsNullOrEmpty(secret) || secret != invitation.Secret)
                 {
                     return BadRequest();
                 }
-                var protector = _dataProtectionProvider.CreateProtector("InvitationToken");
-                int secretId;
-                string output = protector.Unprotect(token);
-                if (int.TryParse(output, out secretId))
-                {
-                    if (invitation.OpenInvite == false)
-                    {
-                        var recipient = invitation.Recipients.SingleOrDefault(i => i.Id == secretId);
-                        if (recipient == null || recipient.DateJoined != null)
-                        {
-                            return BadRequest();
-                        }
-                        recipient.DateJoined = DateTime.Now;
-                    }
-                    else if (secretId != invitation.Id)// && !invitation.Recipients.Any(i => i.Id == secretId))
-                    {
-                        return BadRequest();
-                    }
-                }
-                else
-                {
-                    //ModelState.AddModelError("InvalidToken", "The invitation token was not valid.");
-                    return BadRequest();
-                }
+
             }
             if (User.Identity.IsAuthenticated)
             {
                 var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                if (!string.IsNullOrEmpty(userId))
+                var user = await _context.ApplicationUsers.Include(i=>i.Players).SingleOrDefaultAsync(u => u.Id == userId);
+
+                if (user == null)
                 {
-                    var player = invitation.Pool.Players.SingleOrDefault(p => p.PoolId == invitation.PoolId && p.UserId == userId);
-                    if (player == null)
-                    {
-                        player = new Player { UserId = userId };
-                        invitation.Pool.Players.Add(player);
-                        _context.SaveChanges();
-                        //await _context.SaveChangesAsync();
-                        //await _context.Entry(player).GetDatabaseValuesAsync();
-                    }
-                    return RedirectToAction("Details", "Pools", new { id = invitation.PoolId });
+                    return Unauthorized();
                 }
+                if(!user.Players.Any(p=>p.PoolId == invitation.PoolId))
+                {
+                    user.Players.Add(new Player { PoolId = invitation.PoolId });
+                    await _context.SaveChangesAsync();
+                }
+                return RedirectToAction("Details", "Pools", new { id = invitation.PoolId });
+                //if (!string.IsNullOrEmpty(userId))
+                //{
+                //    var player = invitation.Pool.Players.SingleOrDefault(p => p.PoolId == invitation.PoolId && p.UserId == userId);
+                //    if (player == null)
+                //    {
+                //        player = new Player { UserId = userId, PoolId = invitation.PoolId };
+                //        await _context.Players.AddAsync(player);
+                //        await _context.SaveChangesAsync();
+                //        //await _context.SaveChangesAsync();
+                //        await _context.Entry(player).GetDatabaseValuesAsync();
+                //    }
+                //    return RedirectToAction("Details", "Pools", new { id = invitation.PoolId });
+                //}
             }
             return Unauthorized();
 

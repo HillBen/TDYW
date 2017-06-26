@@ -36,12 +36,12 @@
         <dd>
             @Html.DisplayFor(model => model.EndDate)
         </dd>
-        <dt>
+        @*<dt>
             @Html.DisplayNameFor(model => model.Private)
         </dt>
         <dd>
             @Html.DisplayFor(model => model.Private)
-        </dd>
+        </dd>*@
         <dt>
             @Html.DisplayNameFor(model => model.OpenEnrollment)
         </dt>
@@ -54,7 +54,7 @@
         <dd>
             @Html.DisplayFor(model => model.PicksPerPlayer)
         </dd>
-        <dt>
+        @*<dt>
             @Html.DisplayNameFor(model => model.OversPerPlayer)
         </dt>
         <dd>
@@ -119,12 +119,12 @@
         </dt>
         <dd>
             @Html.DisplayFor(model => model.FixedRankBonusFactor)
-        </dd>
+        </dd>*@
         <dt>
-            @Html.DisplayNameFor(model => model.Owner)
+            @Html.DisplayNameFor(model => model.Owner.DisplayName)
         </dt>
         <dd>
-            @Html.DisplayFor(model => model.Owner.Id)
+            @Html.DisplayFor(model => model.Owner.DisplayName)
         </dd>
     </dl>
     
