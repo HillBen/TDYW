@@ -30,12 +30,12 @@
     </div>
     @using (Html.BeginForm())
     {
-        var inviteeId = ViewData["InviteeId"];
+        var recipientId = ViewData["RecipientId"];
         var invitationId = ViewData["InvitationId"];
-        var email = ViewData["Email"];
+        var token = ViewData["Token"];
         var poolId = ViewData["PoolId"];
-        @Html.Hidden("InviteeId", inviteeId)
-        @Html.Hidden("Email", email)
+        @Html.Hidden("RecipientId", recipientId)
+        @Html.Hidden("Token", token)
         @Html.Hidden("InvitationId", invitationId)
         @Html.Hidden("PoolId", poolId)
         <input type="submit" value="Join" class="btn btn-default" />

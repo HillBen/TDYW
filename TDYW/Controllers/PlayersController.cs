@@ -97,6 +97,11 @@ namespace TDYW.Controllers
                     ModelState.AddModelError("Error", "Players cannot join a pool after it has started.");
                     return BadRequest(ModelState);
                 }
+                else if (pool.Private && pool.UserId != userId)
+                {
+                    ModelState.AddModelError("Error", "You cannot join a private pool without an invitation.");
+                    return BadRequest(ModelState);
+                }
                 else
                 {
                     player = new Player { UserId = userId, PoolId = poolId.Value };

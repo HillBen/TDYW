@@ -14,29 +14,29 @@ using Microsoft.Extensions.Logging;
 namespace TDYW.Controllers
 {
     [Authorize]
-    public class InviteesController : Controller
+    public class RecipientsController : Controller
     {
         private readonly ApplicationDbContext _context;
         private string _userId;
         private readonly IEmailSender _emailSender;
         private readonly ILogger _logger;
 
-        public InviteesController(ApplicationDbContext context, IEmailSender emailSender, ILoggerFactory loggerFactory)
+        public RecipientsController(ApplicationDbContext context, IEmailSender emailSender, ILoggerFactory loggerFactory)
         {
             _context = context;
             _userId = User.Identity.Name;
             _emailSender = emailSender;
-            _logger = loggerFactory.CreateLogger<InviteesController>();
+            _logger = loggerFactory.CreateLogger<RecipientsController>();
         }
 
-        // GET: Invitees
+        // GET: Recipients
         public async Task<IActionResult> Index(int? invitationId)
         {
             if(invitationId == null)
             {
                 return NotFound();
             }
-            var invitation = await _context.Invitations.Include(i=>i.Invitees).SingleOrDefaultAsync(w => w.Id == invitationId.Value);
+            var invitation = await _context.Invitations.Include(i=>i.Recipients).SingleOrDefaultAsync(w => w.Id == invitationId.Value);
             if(invitation == null)
             {
                 return NotFound();
@@ -45,9 +45,9 @@ namespace TDYW.Controllers
             {
                 return Unauthorized();
             }
-            if(invitation.Pool.IsPreGame() && invitation.Invitees.Any(a=>a.DateSent == null))
+            if(invitation.Pool.IsPreGame() && invitation.Recipients.Any(a=>a.DateSent == null))
             {
-                foreach(Invitee i in invitation.Invitees.Where(w=>w.DateSent == null))
+                foreach(Recipient i in invitation.Recipients.Where(w=>w.DateSent == null))
                 {
                     try
                     {
@@ -56,14 +56,14 @@ namespace TDYW.Controllers
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError(1, ex, "Invite Email Error: inviteeId=" + i.Id + " to " + i.Email);
+                        _logger.LogError(1, ex, "Invite Email Error: recipientId=" + i.Id + " to " + i.Email);
                     } 
                 }
             }
-            return View(invitation.Invitees.ToList());
+            return View(invitation.Recipients.ToList());
         }
 
-        // GET: Invitees/Details/5
+        // GET: Recipients/Details/5
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -71,19 +71,19 @@ namespace TDYW.Controllers
                 return NotFound();
             }
 
-            var invitee = await _context.Invitees.SingleOrDefaultAsync(m => m.Id == id);
-            if (invitee == null)
+            var recipient = await _context.Recipients.SingleOrDefaultAsync(m => m.Id == id);
+            if (recipient == null)
             {
                 return NotFound();
             }
-            if(invitee.Invitation.Pool.UserId != _userId)
+            if(recipient.Invitation.Pool.UserId != _userId)
             {
                 return Unauthorized();
             }
-            return View(invitee);
+            return View(recipient);
         }
 
-        // GET: Invitees/Create
+        // GET: Recipients/Create
         public IActionResult Create(int? invitationId)
         {
             if (invitationId == null)
@@ -94,16 +94,16 @@ namespace TDYW.Controllers
             return View();
         }
 
-        // POST: Invitees/Create
+        // POST: Recipients/Create
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Email,InvitationId")] Invitee invitee)
+        public async Task<IActionResult> Create([Bind("Email,InvitationId")] Recipient recipient)
         {
             if (ModelState.IsValid)
             {
-                var invitation = await _context.Invitations.SingleOrDefaultAsync(w => w.Id == invitee.InvitationId);
+                var invitation = await _context.Invitations.SingleOrDefaultAsync(w => w.Id == recipient.InvitationId);
                 if (invitation == null)
                 {
                     return NotFound();
@@ -114,7 +114,7 @@ namespace TDYW.Controllers
                 }
                 if(invitation.Pool.IsPreGame())
                 {
-                    _context.Add(invitee);
+                    _context.Add(recipient);
                     await _context.SaveChangesAsync();
                 }
                 else
@@ -123,67 +123,67 @@ namespace TDYW.Controllers
                 }
                 return RedirectToAction("Index", new { invitationId = invitation.Id });
             }
-            return View(invitee);
+            return View(recipient);
         }
 
-        // GET: Invitees/Edit/5
+        // GET: Recipients/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
             {
                 return NotFound();
             }
-            var invitee = await _context.Invitees.SingleOrDefaultAsync(m => m.Id == id);
-            if (invitee == null)
+            var recipient = await _context.Recipients.SingleOrDefaultAsync(m => m.Id == id);
+            if (recipient == null)
             {
                 return NotFound();
             }
-            if(invitee.Invitation.Pool.UserId != _userId)
+            if(recipient.Invitation.Pool.UserId != _userId)
             {
                 return Unauthorized();
             }
-            return View(invitee);
+            return View(recipient);
         }
 
-        // POST: Invitees/Edit/5
+        // POST: Recipients/Edit/5
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Email,InvitationId")] Invitee inviteeNew)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Email,InvitationId")] Recipient recipientNew)
         {
-            if (id != inviteeNew.Id)
+            if (id != recipientNew.Id)
             {
                 return NotFound();
             }
 
             if (ModelState.IsValid)
             {
-                var inviteeOld = await _context.Invitees.SingleOrDefaultAsync(m => m.Id == id);
-                if (inviteeOld == null)
+                var recipientOld = await _context.Recipients.SingleOrDefaultAsync(m => m.Id == id);
+                if (recipientOld == null)
                 {
                     return NotFound();
                 }
-                if (inviteeOld.Invitation.Pool.UserId != _userId)
+                if (recipientOld.Invitation.Pool.UserId != _userId)
                 {
                     return Unauthorized();
                 }
-                if (inviteeOld.Invitation.Pool.IsPreGame())
+                if (recipientOld.Invitation.Pool.IsPreGame())
                 {
-                    _context.Entry(inviteeOld).CurrentValues.SetValues(inviteeNew);
-                    //_context.Update(inviteeNew);
+                    _context.Entry(recipientOld).CurrentValues.SetValues(recipientNew);
+                    //_context.Update(recipientNew);
                     _context.SaveChanges();
                 }
                 else
                 {
                     ModelState.AddModelError("PreGameException", "This pool has started. The invitation period is over.");
                 }
-                return RedirectToAction("Index", new { @invitationId = inviteeOld.InvitationId });
+                return RedirectToAction("Index", new { @invitationId = recipientOld.InvitationId });
             }
-            return View(inviteeNew);
+            return View(recipientNew);
         }
 
-        // GET: Invitees/Delete/5
+        // GET: Recipients/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -191,39 +191,39 @@ namespace TDYW.Controllers
                 return NotFound();
             }
 
-            var invitee = await _context.Invitees
+            var recipient = await _context.Recipients
                 .Include(i => i.Invitation)
                 .SingleOrDefaultAsync(m => m.Id == id);
-            if (invitee == null)
+            if (recipient == null)
             {
                 return NotFound();
             }
-            if(invitee.Invitation.Pool.UserId != _userId)
+            if(recipient.Invitation.Pool.UserId != _userId)
             {
                 return Unauthorized();
             }
-            return View(invitee);
+            return View(recipient);
         }
 
-        // POST: Invitees/Delete/5
+        // POST: Recipients/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var invitee = await _context.Invitees.SingleOrDefaultAsync(m => m.Id == id);
-            if(invitee.Invitation.Pool.UserId != _userId)
+            var recipient = await _context.Recipients.SingleOrDefaultAsync(m => m.Id == id);
+            if(recipient.Invitation.Pool.UserId != _userId)
             {
                 return Unauthorized();
             }
-            int invitationId = invitee.InvitationId;
-            _context.Invitees.Remove(invitee);
+            int invitationId = recipient.InvitationId;
+            _context.Recipients.Remove(recipient);
             await _context.SaveChangesAsync();
             return RedirectToAction("Index", new { @invitationId = invitationId });
         }
 
-        private bool InviteeExists(int id)
+        private bool RecipientExists(int id)
         {
-            return _context.Invitees.Any(e => e.Id == id);
+            return _context.Recipients.Any(e => e.Id == id);
         }
     }
 }

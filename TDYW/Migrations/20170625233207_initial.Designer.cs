@@ -8,13 +8,13 @@ using TDYW.Data;
 namespace TDYW.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20170614175411_initial")]
+    [Migration("20170625233207_initial")]
     partial class initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
             modelBuilder
-                .HasAnnotation("ProductVersion", "1.1.1");
+                .HasAnnotation("ProductVersion", "1.1.2");
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityRole", b =>
                 {
@@ -220,26 +220,6 @@ namespace TDYW.Migrations
                     b.ToTable("Invitations");
                 });
 
-            modelBuilder.Entity("TDYW.Models.Invitee", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<DateTime?>("DateJoined");
-
-                    b.Property<DateTime?>("DateSent");
-
-                    b.Property<string>("Email");
-
-                    b.Property<int>("InvitationId");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("InvitationId");
-
-                    b.ToTable("Invitees");
-                });
-
             modelBuilder.Entity("TDYW.Models.Judgement", b =>
                 {
                     b.Property<int>("Id")
@@ -324,13 +304,6 @@ namespace TDYW.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<string>("Email");
-
-                    b.Property<bool>("HidePicksBeforeStart");
-
-                    b.Property<string>("Name")
-                        .HasMaxLength(50);
-
                     b.Property<int>("PoolId");
 
                     b.Property<string>("UserId");
@@ -397,6 +370,26 @@ namespace TDYW.Migrations
                     b.ToTable("Pools");
                 });
 
+            modelBuilder.Entity("TDYW.Models.Recipient", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<DateTime?>("DateJoined");
+
+                    b.Property<DateTime?>("DateSent");
+
+                    b.Property<string>("Email");
+
+                    b.Property<int>("InvitationId");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("InvitationId");
+
+                    b.ToTable("Recipients");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityRole")
@@ -455,14 +448,6 @@ namespace TDYW.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
-            modelBuilder.Entity("TDYW.Models.Invitee", b =>
-                {
-                    b.HasOne("TDYW.Models.Invitation", "Invitation")
-                        .WithMany("Invitees")
-                        .HasForeignKey("InvitationId")
-                        .OnDelete(DeleteBehavior.Cascade);
-                });
-
             modelBuilder.Entity("TDYW.Models.Judgement", b =>
                 {
                     b.HasOne("TDYW.Models.Complaint", "Complaint")
@@ -506,6 +491,14 @@ namespace TDYW.Migrations
                     b.HasOne("TDYW.Models.ApplicationUser", "Owner")
                         .WithMany("Pools")
                         .HasForeignKey("UserId");
+                });
+
+            modelBuilder.Entity("TDYW.Models.Recipient", b =>
+                {
+                    b.HasOne("TDYW.Models.Invitation", "Invitation")
+                        .WithMany("Recipients")
+                        .HasForeignKey("InvitationId")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
         }
     }

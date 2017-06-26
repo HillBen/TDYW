@@ -233,9 +233,6 @@ namespace TDYW.Migrations
                 {
                     Id = table.Column<int>(nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    Email = table.Column<string>(nullable: true),
-                    HidePicksBeforeStart = table.Column<bool>(nullable: false),
-                    Name = table.Column<string>(maxLength: 50, nullable: true),
                     PoolId = table.Column<int>(nullable: false),
                     UserId = table.Column<string>(nullable: true)
                 },
@@ -257,7 +254,7 @@ namespace TDYW.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Invitees",
+                name: "Recipients",
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
@@ -269,9 +266,9 @@ namespace TDYW.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Invitees", x => x.Id);
+                    table.PrimaryKey("PK_Recipients", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Invitees_Invitations_InvitationId",
+                        name: "FK_Recipients_Invitations_InvitationId",
                         column: x => x.InvitationId,
                         principalTable: "Invitations",
                         principalColumn: "Id",
@@ -418,11 +415,6 @@ namespace TDYW.Migrations
                 column: "PoolId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Invitees_InvitationId",
-                table: "Invitees",
-                column: "InvitationId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Rulings_ComplaintId",
                 table: "Rulings",
                 column: "ComplaintId");
@@ -456,6 +448,11 @@ namespace TDYW.Migrations
                 name: "IX_Pools_UserId",
                 table: "Pools",
                 column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Recipients_InvitationId",
+                table: "Recipients",
+                column: "InvitationId");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
@@ -476,19 +473,19 @@ namespace TDYW.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
-                name: "Invitees");
+                name: "Rulings");
 
             migrationBuilder.DropTable(
-                name: "Rulings");
+                name: "Recipients");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
-                name: "Invitations");
+                name: "Complaints");
 
             migrationBuilder.DropTable(
-                name: "Complaints");
+                name: "Invitations");
 
             migrationBuilder.DropTable(
                 name: "Picks");

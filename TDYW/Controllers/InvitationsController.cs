@@ -18,7 +18,6 @@ namespace TDYW.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly IDataProtectionProvider _dataProtectionProvider;
-        private const string _protectionKey = "They die you win, play now free.";
         public InvitationsController(ApplicationDbContext context, IDataProtectionProvider dataProtectionProvider)
         {
             _context = context;
@@ -219,6 +218,7 @@ namespace TDYW.Controllers
         }
 
 
+
         [Authorize]
         public async Task<IActionResult> Rsvp(int? id, string token)
         {
@@ -231,46 +231,59 @@ namespace TDYW.Controllers
                 .SingleOrDefaultAsync(m => m.Id == id);
             if (invitation == null)
             {
-                return NotFound();
+                return BadRequest();
             }
             if (invitation.Pool.Private)
             {
                 if (string.IsNullOrEmpty(token))
                 {
-                    return Unauthorized();
+                    return BadRequest();
                 }
-                var protector = _dataProtectionProvider.CreateProtector(_protectionKey);
+                var protector = _dataProtectionProvider.CreateProtector("InvitationToken");
                 int secretId;
                 string output = protector.Unprotect(token);
                 if (int.TryParse(output, out secretId))
                 {
                     if (invitation.OpenInvite == false)
                     {
-                        var invitee = invitation.Invitees.SingleOrDefault(i => i.Id == secretId);
-                        if (invitee == null)
+                        var recipient = invitation.Recipients.SingleOrDefault(i => i.Id == secretId);
+                        if (recipient == null || recipient.DateJoined != null)
                         {
-                            ModelState.AddModelError("InvalidToken", "The invitation token did not match a recipient Id.");
+                            return BadRequest();
                         }
-                        else
-                        {
-                            ViewData["InviteeId"] = invitee.Id;
-                            ViewData["Email"] = invitee.Email;
-                        }
+                        recipient.DateJoined = DateTime.Now;
                     }
-                    else if (secretId != invitation.Id && !invitation.Invitees.Any(i => i.Id == secretId))
+                    else if (secretId != invitation.Id)// && !invitation.Recipients.Any(i => i.Id == secretId))
                     {
-                        ModelState.AddModelError("InvalidToken", "The invitation token did not match the invitation.");
+                        return BadRequest();
                     }
                 }
                 else
                 {
-                    ModelState.AddModelError("InvalidToken", "The invitation token was not valid.");
+                    //ModelState.AddModelError("InvalidToken", "The invitation token was not valid.");
+                    return BadRequest();
                 }
             }
-            ViewData["InvitationId"] = id;
-            ViewData["PoolId"] = invitation.PoolId;
-            return View(invitation);
+            if (User.Identity.IsAuthenticated)
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (!string.IsNullOrEmpty(userId))
+                {
+                    var player = invitation.Pool.Players.SingleOrDefault(p => p.PoolId == invitation.PoolId && p.UserId == userId);
+                    if (player == null)
+                    {
+                        player = new Player { UserId = userId };
+                        invitation.Pool.Players.Add(player);
+                        _context.SaveChanges();
+                        //await _context.SaveChangesAsync();
+                        //await _context.Entry(player).GetDatabaseValuesAsync();
+                    }
+                    return RedirectToAction("Details", "Pools", new { id = invitation.PoolId });
+                }
+            }
+            return Unauthorized();
 
         }
+
     }
 }

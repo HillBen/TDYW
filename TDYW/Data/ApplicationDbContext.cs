@@ -23,7 +23,7 @@ namespace TDYW.Data
 
         public DbSet<Invitation> Invitations { get; set; }
 
-        public DbSet<Invitee> Invitees { get; set; }
+        public DbSet<Recipient> Recipients { get; set; }
 
         public DbSet<Person> Persons { get; set; }
 

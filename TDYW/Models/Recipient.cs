@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace TDYW.Models
 {
-    public class Invitee
+    public class Recipient
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]

@@ -26,18 +26,7 @@ namespace TDYW.Models
 
         public Pool Pool { get; set; }
 
-        public ICollection<Invitee> Invitees { get; set; } = new List<Invitee>();
+        public ICollection<Recipient> Recipients { get; set; } = new List<Recipient>();
 
-        [NotMapped]
-        public string Code
-        {
-            get
-            {
-                if (OpenInvite)
-                {
-
-                }
-            }
-        }
     }
 }
