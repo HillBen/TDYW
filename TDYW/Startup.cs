@@ -90,6 +90,8 @@ namespace TDYW
                     name: "default",
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
+
+            InitialData.InitializeAsync(app.ApplicationServices);
         }
     }
 }
